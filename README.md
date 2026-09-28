@@ -1,4 +1,4 @@
-# Loop看板
+# CodeLoop看板
 
 ## 推荐：让 AI 帮你配置
 
@@ -135,6 +135,14 @@ HTTP 接口为 `GET /api/projects/:id/board-config` 和 `PUT /api/projects/:id/b
 开启自动化审批能力时，代码仓库可使用各自的 `review-policy.json` 定义规则，模板见 [review-policy.example.json](review-policy.example.json) 与 [schema](review-policy.schema.json)。缺少该文件时，不应用该仓库的阈值/目录审批策略；示例中的 50 行不是缺省生效规则。黑名单与白名单只能配置一种。
 
 云端协作支持 Cloudflare Worker、D1 和 R2，设置方法见 [云端协作](docs/cloud-collaboration.md)。`wrangler.example.jsonc` 仅是模板；实际部署配置使用被忽略的 `wrangler.jsonc`。
+
+## 来源与许可
+
+CodeLoop看板基于 [chuspeeism/dashi-taskboard](https://github.com/chuspeeism/dashi-taskboard)（Codex Taskboard）二次开发，由本项目贡献者独立维护，感谢上游作者与贡献者。主要扩展包括 JSON 可配置状态、通用外部缺陷平台适配、AI 辅助适配指引，以及 `clb` 和 `code-loop-board` 的使用流程。
+
+本项目采用 [Apache License 2.0](LICENSE)，第三方组件与资源保留各自许可。归属说明见 [NOTICE](NOTICE)，资源说明见 [第三方声明](THIRD_PARTY_NOTICES.md)，已核对版本及原始基线的证据边界见 [上游来源记录](docs/upstream-provenance.md)。本项目不代表上游维护者或 OpenAI 官方产品。
+
+本 README 已由 CodeLoop 贡献者修改。分发源码或构建产物时保留适用许可证、版权与归属声明；这些声明不属于脱敏时应删除的私有信息。
 
 ## GitHub 发布与本地数据
 

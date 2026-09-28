@@ -1,3 +1,4 @@
+> 本文件已为 CodeLoop 修改。
 # Cloud collaboration
 
 Loop看板 can run as a small shared Cloudflare deployment for trusted collaborators. There is no enforced two-user limit:

@@ -1,0 +1,25 @@
+CodeLoop Board
+
+This project is derived from chuspeeism/dashi-taskboard (Codex Taskboard):
+https://github.com/chuspeeism/dashi-taskboard
+
+The upstream project is distributed under the Apache License, Version 2.0.
+Credit for the upstream work belongs to its authors and contributors.
+CodeLoop is independently maintained by the CodeLoop contributors.
+
+CodeLoop modifications include configurable board states, external issue
+provider integration, AI-assisted adapter guidance, the clb CLI naming,
+the code-loop-board Skill, and Windows launcher adaptations.
+Modified source files carry concise modification notices. Files found
+identical to upstream history retain their original contents.
+
+The original upstream commit used to start this derivative has not been
+established. The revision documented in docs/upstream-provenance.md is a
+license verification reference, not a claimed fork point.
+
+This NOTICE was added by CodeLoop. It is informational and does not change
+the terms of the Apache License. Third-party components and assets retain
+their own licenses; see THIRD_PARTY_NOTICES.md.
+
+Upstream and third-party names are used to identify their respective works.
+No endorsement by the upstream maintainers or OpenAI is claimed.

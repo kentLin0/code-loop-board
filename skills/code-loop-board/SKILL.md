@@ -2,6 +2,7 @@
 name: code-loop-board
 description: Configure Loop board states, manage projects and tasks through clb, execute assigned Worktree tasks, and create or maintain saved external issue adapters when explicitly requested.
 ---
+> 本文件已为 CodeLoop 修改。
 
 # Loop看板
 

@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { normalizeWorkflowSnapshot } from "../../shared/workflow-control-flow.mjs";
 import {
   DEFAULT_BOARD_CONFIG,

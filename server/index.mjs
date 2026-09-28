@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import os from "node:os";
 import { pathToFileURL } from "node:url";
 

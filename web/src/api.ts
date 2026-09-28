@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { normalizeBoardConfig, type BoardConfig } from "../../shared/board-config.mjs";
 import type {
   ActorIdentity,

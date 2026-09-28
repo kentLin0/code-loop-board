@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import type { MouseEvent } from "react";
 import { useBoardConfig, statusDetails } from "../boardConfig";
 import { taskStatusSequence, boundStatus, canMoveTask } from "../../../shared/board-config.mjs";

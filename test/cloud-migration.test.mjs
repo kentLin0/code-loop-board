@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import assert from "node:assert/strict";
 import { execFile as execFileCallback } from "node:child_process";
 import { createHash } from "node:crypto";

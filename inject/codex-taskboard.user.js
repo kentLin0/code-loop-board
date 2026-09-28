@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 (() => {
   "use strict";
 

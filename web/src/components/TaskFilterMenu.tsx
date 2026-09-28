@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { useBoardConfig, statusDetails } from "../boardConfig";
 import {
   useEffect,

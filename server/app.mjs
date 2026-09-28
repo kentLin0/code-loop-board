@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { randomUUID } from "node:crypto";
 import { execFile, spawn } from "node:child_process";
 import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";

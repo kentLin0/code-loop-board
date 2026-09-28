@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 const ISSUE_QUERY_PARAM = "issue";
 const ISSUE_PANEL_QUERY_PARAM = "panel";
 

@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { spawn } from "node:child_process";
 
 const VISIBLE_TEXT_LIMIT = 65_536;

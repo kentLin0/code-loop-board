@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { useEffect, useState } from "react";
 import type { DragEvent } from "react";
 import { boundStatus } from "../../../shared/board-config.mjs";

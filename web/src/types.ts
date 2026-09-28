@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 export const TASK_PRIORITIES = ["none", "urgent", "high", "medium", "low"] as const;
 
 export type TaskStatus = string;

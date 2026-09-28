@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { isAbsolutePath } from "../shared/cross-platform-path.mjs";

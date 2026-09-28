@@ -1,3 +1,4 @@
+> 本文件已为 CodeLoop 修改。
 # clb CLI
 
 `clb` emits JSON. Add `--json` when making the output contract explicit. This reference defines command arguments, results, and side effects; workflow and recovery rules live in [SKILL.md](../SKILL.md). Read only the section for the command being used. Examples use the CLI name; execute them through the task prompt's fixed runner when supplied.

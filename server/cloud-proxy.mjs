@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { isAbsolutePath } from "../shared/cross-platform-path.mjs";
 import { normalizeCloudUrl } from "./cloud-config.mjs";
 

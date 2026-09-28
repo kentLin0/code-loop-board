@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { fileURLToPath, URL } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";

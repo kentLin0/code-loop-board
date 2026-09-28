@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import path from "node:path";
 
 const HOST_REQUEST_ERROR = "自动认领配置暂时无法应用，请刷新后重试";

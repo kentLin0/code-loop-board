@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { execFile, spawn } from "node:child_process";
 import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";

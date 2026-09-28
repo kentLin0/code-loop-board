@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isAbsolutePath } from "./cross-platform-path.mjs";

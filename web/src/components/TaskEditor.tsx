@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useBoardConfig, statusDetails } from "../boardConfig";

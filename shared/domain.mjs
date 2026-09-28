@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { DEFAULT_BOARD_CONFIG, boardStateIds } from "./board-config.mjs";
 
 export const TASK_STATUSES = boardStateIds(DEFAULT_BOARD_CONFIG);

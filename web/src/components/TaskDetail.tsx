@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for CodeLoop.
 
 import { createHash } from "node:crypto";
 import {

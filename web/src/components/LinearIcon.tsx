@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import type { ReactNode, SVGProps } from "react";
 import { useBoardConfig, statusDetails } from "../boardConfig";
 import type { TaskPriority, TaskStatus } from "../types";

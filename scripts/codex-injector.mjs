@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for CodeLoop.
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";

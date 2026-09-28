@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for CodeLoop.
 
 import { realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";

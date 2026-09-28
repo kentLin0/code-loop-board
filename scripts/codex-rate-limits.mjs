@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import { spawn } from "node:child_process";
 import readline from "node:readline";
 

@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import assert from "node:assert/strict";
 import { chmod, mkdtemp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
