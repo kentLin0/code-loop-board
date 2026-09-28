@@ -1,4 +1,5 @@
-import { copyFile, mkdir, rename, stat, unlink } from "node:fs/promises";
+// Modified for CodeLoop.
+import { copyFile, mkdir, rename, stat, unlink, utimes } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -43,15 +44,27 @@ export async function prepareCodexExecutable(options = {}) {
 
   const runtimeDirectory = options.runtimeDirectory
     ?? path.join(processEnv.LOCALAPPDATA || os.tmpdir(), "codex-taskboard", "runtime");
-  const runtimePath = path.join(runtimeDirectory, `codex-${version}.exe`);
-  const sourceStat = await stat(sourcePath);
-  const runtimeStat = await stat(runtimePath).catch(() => null);
-  if (runtimeStat?.isFile() && runtimeStat.size === sourceStat.size) return runtimePath;
+  const versionDirectory = path.join(runtimeDirectory, version);
+  await mkdir(versionDirectory, { recursive: true });
+  for (const filename of [
+    "codex.exe",
+    "codex-code-mode-host.exe",
+    "codex-command-runner.exe",
+    "codex-windows-sandbox-setup.exe",
+  ]) {
+    const bundledPath = path.join(path.dirname(sourcePath), filename);
+    const runtimePath = path.join(versionDirectory, filename);
+    const sourceStat = await stat(bundledPath);
+    const runtimeStat = await stat(runtimePath).catch(() => null);
+    if (runtimeStat?.isFile()
+      && runtimeStat.size === sourceStat.size
+      && Math.floor(runtimeStat.mtimeMs) === Math.floor(sourceStat.mtimeMs)) continue;
 
-  await mkdir(runtimeDirectory, { recursive: true });
-  const temporaryPath = `${runtimePath}.${process.pid}.tmp`;
-  await copyFile(sourcePath, temporaryPath);
-  await unlink(runtimePath).catch(() => {});
-  await rename(temporaryPath, runtimePath);
-  return runtimePath;
+    const temporaryPath = `${runtimePath}.${process.pid}.tmp`;
+    await copyFile(bundledPath, temporaryPath);
+    await utimes(temporaryPath, sourceStat.atime, sourceStat.mtime);
+    await unlink(runtimePath).catch(() => {});
+    await rename(temporaryPath, runtimePath);
+  }
+  return path.join(versionDirectory, "codex.exe");
 }
