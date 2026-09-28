@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
@@ -111,6 +112,6 @@ test("the project home omits the navigation bar but keeps an invisible drag regi
 
 test("realtime updates remain active on the project home and reconcile after reconnecting", () => {
   assert.match(appSource, /useEffect\(\(\) => \{\s*const source = new EventSource\("\/api\/events"\)/);
-  assert.match(appSource, /event\.type\.startsWith\("task\."\)[\s\S]*?scheduleRefresh\(\{ projects: true, tasks: affectsSelectedProject \}\)/);
+  assert.match(appSource, /event\.type\.startsWith\("task\."\)[\s\S]*?scheduleRefresh\(\{ projects: true, tasks: affectsSelectedProject, projectId: payload\.projectId \}\)/);
   assert.match(appSource, /source\.onopen = \(\) => \{[\s\S]*?scheduleRefresh\(\{ projects: true, tasks: Boolean\(selectedProjectId\) \}\)/);
 });

@@ -477,23 +477,29 @@ function LocalRealtimeSync({
   setCommentsRevision,
   setAttachmentsRevision,
 }: LocalRealtimeSyncProps) {
+  const selectionRef = useRef({ selectedProjectId, detailTaskId });
+  useLayoutEffect(() => {
+    selectionRef.current = { selectedProjectId, detailTaskId };
+  }, [selectedProjectId, detailTaskId]);
+
   useEffect(() => {
     const source = new EventSource("/api/events");
     let refreshTimer: number | undefined;
     let refreshProjectsPending = false;
-    let refreshTasksPending = false;
+    const pendingTaskProjects = new Set<string | undefined>();
 
-    const scheduleRefresh = (options: { projects?: boolean; tasks?: boolean }) => {
+    const scheduleRefresh = (options: { projects?: boolean; tasks?: boolean; projectId?: string }) => {
       refreshProjectsPending ||= options.projects === true;
-      refreshTasksPending ||= options.tasks === true;
+      if (options.tasks) pendingTaskProjects.add(options.projectId);
       window.clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(() => {
+        const { selectedProjectId } = selectionRef.current;
         if (refreshProjectsPending) void refreshProjectList();
-        if (refreshTasksPending && selectedProjectId) {
+        if (selectedProjectId && (pendingTaskProjects.has(undefined) || pendingTaskProjects.has(selectedProjectId))) {
           void refreshTasks(selectedProjectId, { quiet: true });
         }
         refreshProjectsPending = false;
-        refreshTasksPending = false;
+        pendingTaskProjects.clear();
       }, 120);
     };
 
@@ -505,6 +511,7 @@ function LocalRealtimeSync({
       } catch {
         // A malformed event should not interrupt later updates.
       }
+      const { selectedProjectId, detailTaskId } = selectionRef.current;
       const affectsSelectedProject = Boolean(selectedProjectId)
         && (!payload.projectId || payload.projectId === selectedProjectId);
       if (event.type === "project.created") {
@@ -512,12 +519,12 @@ function LocalRealtimeSync({
         return;
       }
       if (event.type.startsWith("task.")) {
-        scheduleRefresh({ projects: true, tasks: affectsSelectedProject });
+        scheduleRefresh({ projects: true, tasks: affectsSelectedProject, projectId: payload.projectId });
         return;
       }
       if (!affectsSelectedProject) return;
       if (event.type === "board.config.updated") {
-        scheduleRefresh({ tasks: true });
+        scheduleRefresh({ tasks: true, projectId: payload.projectId });
         return;
       }
       if (event.type === "workflow.updated") {
@@ -528,7 +535,7 @@ function LocalRealtimeSync({
         if (!detailTaskId || !payload.taskId || payload.taskId === detailTaskId) {
           setCommentsRevision((current) => current + 1);
         }
-        scheduleRefresh({ tasks: true });
+        scheduleRefresh({ tasks: true, projectId: payload.projectId });
         return;
       }
       if (event.type.startsWith("attachment.")) {
@@ -542,6 +549,7 @@ function LocalRealtimeSync({
     EVENT_NAMES.forEach((name) => source.addEventListener(name, handleEvent));
     source.onopen = () => {
       setConnection("live");
+      const { selectedProjectId, detailTaskId } = selectionRef.current;
       scheduleRefresh({ projects: true, tasks: Boolean(selectedProjectId) });
       if (selectedProjectId) void refreshWorkflowOptions(selectedProjectId);
       if (detailTaskId) {
@@ -557,11 +565,9 @@ function LocalRealtimeSync({
       source.close();
     };
   }, [
-    detailTaskId,
     refreshProjectList,
     refreshTasks,
     refreshWorkflowOptions,
-    selectedProjectId,
     setAttachmentsRevision,
     setCommentsRevision,
     setConnection,
