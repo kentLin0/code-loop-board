@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "initialState": "backlog",
+  "states": [
+    { "id": "backlog", "label": "积压事项", "category": "pending", "color": "#8b8d92", "icon": "circle", "allowCreate": true },
+    { "id": "todo", "label": "新", "category": "pending", "color": "#5b8cff", "icon": "circle", "allowCreate": true },
+    { "id": "in_progress", "label": "开发中", "category": "active", "color": "#e3b341", "icon": "progress", "allowCreate": true },
+    { "id": "pending_approval", "label": "待审批", "category": "active", "color": "#bb87fc", "icon": "pause", "allowCreate": false },
+    { "id": "pending_release", "label": "已修复（待发布）", "category": "active", "color": "#d99b25", "icon": "clock", "allowCreate": false },
+    { "id": "releasing", "label": "发布中", "category": "active", "color": "#4ea7fc", "icon": "progress", "allowCreate": false },
+    { "id": "in_review", "label": "待回归", "category": "active", "color": "#4ea7fc", "icon": "circle", "allowCreate": true },
+    { "id": "blocked", "label": "已阻塞", "category": "blocked", "color": "#eb5757", "icon": "pause", "allowCreate": true },
+    { "id": "done", "label": "已关闭", "category": "done", "color": "#4caf82", "icon": "check", "allowCreate": true },
+    { "id": "canceled", "label": "已取消", "category": "canceled", "color": "#8b8d92", "icon": "close", "allowCreate": true }
+  ],
+  "manualTransitions": {
+    "backlog": ["todo", "in_progress", "in_review", "blocked", "done", "canceled"],
+    "todo": ["backlog", "in_progress", "in_review", "blocked", "done", "canceled"],
+    "in_progress": ["backlog", "todo", "in_review", "blocked", "done", "canceled"],
+    "pending_approval": [],
+    "pending_release": ["blocked", "canceled"],
+    "releasing": ["blocked", "canceled"],
+    "in_review": ["backlog", "todo", "in_progress", "blocked", "done", "canceled"],
+    "blocked": ["backlog", "todo", "in_progress", "in_review", "done", "canceled"],
+    "done": ["backlog", "todo", "in_review", "canceled"],
+    "canceled": ["backlog", "todo"]
+  },
+  "automation": {
+    "enabled": true,
+    "approvalEnabled": true,
+    "releaseEnabled": true,
+    "bindings": {
+      "ready": "todo", "working": "in_progress", "approval": "pending_approval",
+      "releaseReady": "pending_release", "releasing": "releasing", "review": "in_review",
+      "blocked": "blocked", "done": "done", "canceled": "canceled"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "providers": [{ "id": "example-tracker", "module": "./integrations/local/example-tracker/provider.mjs" }],
+  "connections": [{
+    "id": "example-team",
+    "providerId": "example-tracker",
+    "baseUrl": "https://tracker.example.com",
+    "auth": { "credentialsPath": "./.private/tracker-credentials.json" },
+    "options": { "chromeExecutable": "C:/Program Files/Google/Chrome/Application/chrome.exe" },
+    "stateMap": {},
+    "actions": {}
+  }],
+  "projects": [{
+    "projectId": "example-project",
+    "connectionId": "example-team",
+    "scopeId": "example-scope",
+    "filter": {},
+    "delivery": { "mode": "review", "repositories": [{ "repositoryId": "app", "targetBranch": "main" }] },
+    "sync": { "closeOnSourceClosed": false }
+  }]
+}

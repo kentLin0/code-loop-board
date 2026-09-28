@@ -1,0 +1,4 @@
+interface:
+  display_name: "Loop看板"
+  short_description: "Configure Loop board, manage tasks and platform adapters"
+  default_prompt: "Use $code-loop-board to manage this project and its issues with clb."

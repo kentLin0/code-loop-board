@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "initialState": "inbox",
+  "states": [
+    { "id": "inbox", "label": "待整理", "category": "pending", "color": "#8b8d92", "icon": "circle", "allowCreate": true },
+    { "id": "ready", "label": "可领取", "category": "pending", "color": "#5b8cff", "icon": "circle", "allowCreate": true },
+    { "id": "working", "label": "处理中", "category": "active", "color": "#e3b341", "icon": "progress", "allowCreate": true },
+    { "id": "approval", "label": "待审批", "category": "active", "color": "#bb87fc", "icon": "pause", "allowCreate": false },
+    { "id": "release_ready", "label": "待部署", "category": "active", "color": "#d99b25", "icon": "clock", "allowCreate": false },
+    { "id": "deploying", "label": "部署中", "category": "active", "color": "#4ea7fc", "icon": "progress", "allowCreate": false },
+    { "id": "qa", "label": "待验证", "category": "active", "color": "#4ea7fc", "icon": "circle", "allowCreate": true },
+    { "id": "customer_acceptance", "label": "待客户验收", "category": "active", "color": "#0f766e", "icon": "circle", "allowCreate": true },
+    { "id": "stalled", "label": "需协助", "category": "blocked", "color": "#eb5757", "icon": "pause", "allowCreate": true },
+    { "id": "closed", "label": "已完成", "category": "done", "color": "#4caf82", "icon": "check", "allowCreate": true },
+    { "id": "withdrawn", "label": "已取消", "category": "canceled", "color": "#8b8d92", "icon": "close", "allowCreate": true }
+  ],
+  "manualTransitions": {
+    "inbox": ["ready", "withdrawn"],
+    "ready": ["inbox", "working", "withdrawn"],
+    "working": ["qa", "stalled", "withdrawn"],
+    "approval": [],
+    "release_ready": [],
+    "deploying": [],
+    "qa": ["customer_acceptance", "ready", "closed", "stalled"],
+    "customer_acceptance": ["closed", "ready", "stalled"],
+    "stalled": ["ready", "withdrawn"],
+    "closed": ["ready"],
+    "withdrawn": ["inbox"]
+  },
+  "automation": {
+    "enabled": true,
+    "approvalEnabled": true,
+    "releaseEnabled": true,
+    "bindings": {
+      "ready": "ready",
+      "working": "working",
+      "approval": "approval",
+      "releaseReady": "release_ready",
+      "releasing": "deploying",
+      "review": "qa",
+      "blocked": "stalled",
+      "done": "closed",
+      "canceled": "withdrawn"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Repository review policy",
+  "type": "object",
+  "required": ["version", "changedLinesThreshold"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "changedLinesThreshold": { "type": "integer", "minimum": 1 },
+    "blacklist": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "whitelist": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "required": ["blacklist"],
+      "not": { "required": ["whitelist"] }
+    },
+    {
+      "required": ["whitelist"],
+      "not": { "required": ["blacklist"] }
+    }
+  ]
+}
