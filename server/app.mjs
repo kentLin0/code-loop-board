@@ -551,8 +551,8 @@ function actorFromRequest(request) {
     } catch {
       throw new ApiError(400, "INVALID_ACTOR", "User avatar URL is invalid");
     }
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      throw new ApiError(400, "INVALID_ACTOR", "User avatar URL must use HTTP or HTTPS");
+    if (!["http:", "https:"].includes(parsed.protocol) && !/^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/.test(value)) {
+      throw new ApiError(400, "INVALID_ACTOR", "User avatar URL must use HTTP, HTTPS or an inline WebP image");
     }
     avatarUrl = parsed.toString();
   }

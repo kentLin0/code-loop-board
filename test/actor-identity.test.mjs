@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
@@ -72,9 +73,9 @@ test("comment metadata separators never become avatar content", () => {
 });
 
 test("Codex host identity is forwarded to user-authored taskboard mutations", () => {
-  assert.match(injectSource, /function readCodexUser\(\)/);
-  assert.match(injectSource, /cdn\.auth0\.com\/avatars/);
-  assert.match(injectSource, /user: readCodexUser\(\)/);
+  assert.match(injectSource, /async function readCodexUser\(userId\)/);
+  assert.match(injectSource, /function readCodexProfileIdentity\(profileButton\)/);
+  assert.match(injectSource, /user: currentCodexUser \?\? undefined/);
   assert.match(typesSource, /user\?: ActorIdentity/);
   assert.match(apiSource, /export function setCurrentUserActor/);
   assert.match(apiSource, /X-Taskboard-User-Id/);

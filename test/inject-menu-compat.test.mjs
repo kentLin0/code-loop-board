@@ -1,3 +1,4 @@
+// Modified for CodeLoop.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
@@ -25,14 +26,21 @@ test("legacy text menu still anchors to Plugins", () => {
   assert.equal(find(), plugin);
 });
 
-test("new titlebar trailing slot participates in native-content restoration", () => {
+test("native header stays outside the hidden workspace content", () => {
+  const mountSource = source.slice(source.indexOf("function mountActivePage"), source.indexOf("function closeTaskboard"));
   const hidden = [];
-  const slot = { setAttribute: (...args) => hidden.push(args) };
-  const hideSource = source.slice(source.indexOf("function hideNativeHeader"), source.indexOf("function currentTheme"));
-  const hide = vm.runInNewContext(`(${hideSource})`, {
-    HIDDEN_ATTRIBUTE: "data-codex-taskboard-native-hidden",
-    document: { querySelectorAll: (selector) => selector.includes('header-slot="end"') ? [slot] : [] },
+  const content = { getAttribute: () => null, setAttribute: (...args) => hidden.push(args) };
+  const surface = { children: [content], setAttribute() {}, getBoundingClientRect: () => ({ left: 0 }) };
+  const page = { parentElement: surface, style: {}, hidden: true };
+  const mount = vm.runInNewContext(`(${mountSource})`, {
+    active: true, page, findPageMount: () => ({ surface, rail: { getBoundingClientRect: () => ({ right: 52 }) } }),
+    HOST_ATTRIBUTE: "host", OWNED_ATTRIBUTE: "owned", HIDDEN_ATTRIBUTE: "hidden",
+    syncNativeRailIcons() {}, document: { documentElement: { setAttribute() {} } },
   });
-  hide();
-  assert.deepEqual(hidden, [["data-codex-taskboard-native-hidden", "true"]]);
+  mount();
+  assert.equal(page.style.left, "52px");
+  assert.equal(page.hidden, false);
+  assert.deepEqual(hidden, [["hidden", "true"]]);
+  assert.doesNotMatch(mountSource, /hideNativeHeader/);
+  assert.match(source, /top: var\(--app-shell-titlebar-height, 0px\)/);
 });
