@@ -59,7 +59,8 @@ import { ProjectAutomationMenu } from "./components/ProjectAutomationMenu";
 import { TaskContextMenu } from "./components/TaskContextMenu";
 import { TaskDetail } from "./components/TaskDetail";
 import { TaskEditor } from "./components/TaskEditor";
-import { TaskFilterMenu } from "./components/TaskFilterMenu";
+import { TaskFilterMenu, type TaskSort } from "./components/TaskFilterMenu";
+import { Toasts, showToast, dismissUndoToast } from "./components/Toasts";
 import { buildIssueUrl, readIssueIdentifier, readIssuePanel, type IssuePanel } from "./issueRoute";
 import { DEFAULT_LABELS } from "./labels";
 import {
@@ -123,11 +124,6 @@ interface UndoOperation {
   id: number;
   message: string;
   undo: () => Promise<void>;
-}
-
-interface UndoNotice {
-  id: number;
-  message: string;
 }
 
 type ColumnVisibilityByProject = Record<string, Partial<Record<TaskStatus, boolean>>>;
@@ -600,6 +596,7 @@ export function App() {
   const [connection, setConnection] = useState<ConnectionState>("connecting");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState(readTaskFilters);
+  const [taskSort, setTaskSort] = useState<TaskSort>("default");
   const [showEmptyColumns, setShowEmptyColumns] = useState(readShowEmptyColumns);
   const [columnVisibilityByProject, setColumnVisibilityByProject] = useState(readColumnVisibilityByProject);
   const [boardView, setBoardView] = useState<BoardView>("issues");
@@ -629,8 +626,6 @@ export function App() {
   const [projectAutomations, setProjectAutomations] = useState(readProjectAutomations);
   const [automationPending, setAutomationPending] = useState(false);
   const [automationError, setAutomationError] = useState<string | null>(null);
-  const [announcement, setAnnouncementValue] = useState("");
-  const [undoNotice, setUndoNotice] = useState<UndoNotice | null>(null);
   const tasksRequestRef = useRef(0);
   const tasksRef = useRef<Task[]>([]);
   const undoSequenceRef = useRef(0);
@@ -646,8 +641,7 @@ export function App() {
   const projectAutomationsRef = useRef(projectAutomations);
 
   const setAnnouncement = useCallback((message: string) => {
-    setUndoNotice(null);
-    setAnnouncementValue(message);
+    showToast(message);
   }, []);
 
   const rememberDeviceWorkspacePath = useCallback((projectId: string, workspacePath: string) => {
@@ -1360,8 +1354,8 @@ export function App() {
   function pushUndo(message: string, undo: () => Promise<void>, showNotice = true) {
     const operation = { id: ++undoSequenceRef.current, message, undo };
     undoStackRef.current = [...undoStackRef.current.slice(-19), operation];
-    setAnnouncementValue("");
-    setUndoNotice(showNotice ? { id: operation.id, message } : null);
+    if (showNotice) showToast(message, { label: `撤回 ${undoShortcut}`, run: () => void performUndo() });
+    else dismissUndoToast();
   }
 
   async function performUndo() {
@@ -1370,7 +1364,7 @@ export function App() {
     if (!operation) return;
     undoStackRef.current = undoStackRef.current.slice(0, -1);
     undoInFlightRef.current = true;
-    setUndoNotice(null);
+    dismissUndoToast();
     setProjectMenuOpen(false);
     closeContextMenu();
     setActionError(null);
@@ -1438,11 +1432,22 @@ export function App() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [boardConfig, boardView, contextMenu, detailTaskId, editor, hasLoadedTasks, projectMenuOpen, selectedProjectId]);
 
+  const taskComparator = useMemo(() => {
+    if (taskSort === "name") {
+      return (left: Task, right: Task) => left.title.localeCompare(right.title, "zh-CN", { numeric: true });
+    }
+    if (taskSort === "priority") {
+      const rank = { urgent: 0, high: 1, medium: 2, low: 3, none: 4 };
+      return (left: Task, right: Task) => rank[left.priority] - rank[right.priority];
+    }
+    return () => 0;
+  }, [taskSort]);
+
   const filteredTasks = useMemo(() => {
     return tasks.filter(
       (task) => matchesTaskSearch(task, search) && matchesTaskFilters(task, filters),
-    );
-  }, [filters, search, tasks]);
+    ).sort(taskComparator);
+  }, [filters, search, taskComparator, tasks]);
 
   const activeFilterCount = taskFilterCount(filters);
 
@@ -1662,12 +1667,13 @@ export function App() {
     setDraggedTaskId(null);
     setDraggedTaskHeight(0);
     setDropTarget(null);
-    if (!task) return;
+    if (!task || (taskSort !== "default" && task.status === destination)) return;
     setSettlingTaskId(task.id);
     window.setTimeout(() => {
       setSettlingTaskId((current) => current === task.id ? null : current);
     }, 220);
-    void moveTask(task, destination, beforeTaskId, true);
+    if (taskSort === "default") void moveTask(task, destination, beforeTaskId, true);
+    else void moveTask(task, destination);
   }
 
   async function updateTaskProperties(task: Task, changes: Partial<TaskDraft>, message?: string): Promise<Task> {
@@ -1854,7 +1860,7 @@ export function App() {
     setFilters(EMPTY_TASK_FILTERS);
     setActionError(null);
     undoStackRef.current = [];
-    setUndoNotice(null);
+    dismissUndoToast();
     const url = buildIssueUrl(window.location.href, projectId, null);
     window.history.replaceState(null, "", url);
   }
@@ -1870,7 +1876,7 @@ export function App() {
     setFilters(EMPTY_TASK_FILTERS);
     setActionError(null);
     undoStackRef.current = [];
-    setUndoNotice(null);
+    dismissUndoToast();
     const url = buildIssueUrl(window.location.href, null, null);
     window.history.replaceState(null, "", url);
     void loadProjectList();
@@ -2181,6 +2187,8 @@ export function App() {
               labels={availableLabels}
               filters={filters}
               onChange={setFilters}
+              sort={taskSort}
+              onSortChange={setTaskSort}
             />
             <BoardSettingsMenu
               showEmptyColumns={showEmptyColumns}
@@ -2459,25 +2467,7 @@ export function App() {
         issueId={detailTaskId}
       />
 
-      <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      {undoNotice && (
-        <div
-          className="toast undo-toast"
-          role="status"
-          onAnimationEnd={() => setUndoNotice((current) => current?.id === undoNotice.id ? null : current)}
-        >
-          <span className="toast-check" aria-hidden="true"><LinearIcon name="check" /></span>
-          <span className="undo-toast-message">{undoNotice.message}</span>
-          <button type="button" onClick={() => void performUndo()}>
-            撤回 <kbd>{undoShortcut}</kbd>
-          </button>
-        </div>
-      )}
-      {announcement && (
-        <div className="toast" role="status" onAnimationEnd={() => setAnnouncementValue("")}>
-          <span aria-hidden="true"><LinearIcon name="check" /></span>{announcement}
-        </div>
-      )}
+      <Toasts />
       {draggedTaskId && <div className="drag-hint" aria-hidden="true">拖到目标位置后松开</div>}
     </div>
     </BoardConfigContext.Provider>

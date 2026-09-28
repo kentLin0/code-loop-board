@@ -27,7 +27,9 @@ import {
 } from "../types";
 import { LinearIcon, LinearPriorityIcon, LinearStatusIcon } from "./LinearIcon";
 
-type SubmenuName = TaskFilterKey;
+export type TaskSort = "default" | "name" | "priority";
+
+type SubmenuName = TaskFilterKey | "sort";
 
 interface TaskFilterMenuProps {
   tasks: Task[];
@@ -35,6 +37,8 @@ interface TaskFilterMenuProps {
   labels: string[];
   filters: TaskFilters;
   onChange: (filters: TaskFilters) => void;
+  sort: TaskSort;
+  onSortChange: (sort: TaskSort) => void;
 }
 
 interface FilterOption {
@@ -77,7 +81,7 @@ function joinSummary(values: string[], noun: string): string | null {
   return `${values.length} 个${noun}`;
 }
 
-export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: TaskFilterMenuProps) {
+export function TaskFilterMenu({ tasks, search, labels, filters, onChange, sort, onSortChange }: TaskFilterMenuProps) {
   const config = useBoardConfig();
   const statuses = useMemo(() => config.states.map((state) => state.id), [config]);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -115,7 +119,7 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
     setSubmenuQuery("");
     if (name === "content") setContentDraft(filters.content);
     if (focus) {
-      requestAnimationFrame(() => submenuRef.current?.querySelector<HTMLInputElement>("input")?.focus());
+      requestAnimationFrame(() => submenuRef.current?.querySelector<HTMLElement>("input, button")?.focus());
     }
   }
 
@@ -124,11 +128,37 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
     hoverTimerRef.current = window.setTimeout(() => openSubmenu(name), 160);
   }
 
-  function countFor(key: TaskFilterKey, predicate: (task: Task) => boolean): number {
-    return tasks.filter(
-      (task) => matchesTaskSearch(task, search) && matchesTaskFilters(task, filters, key) && predicate(task),
-    ).length;
-  }
+  const searchMatches = useMemo(() => {
+    if (!open) return [];
+    const contentFilters = { ...EMPTY_TASK_FILTERS, content: filters.content };
+    return tasks.filter((task) => matchesTaskSearch(task, search)
+      && matchesTaskFilters(task, contentFilters));
+  }, [filters.content, open, search, tasks]);
+
+  const counts = useMemo(() => {
+    const statuses = new Map<TaskStatus, number>();
+    const priorities = new Map<TaskPriority, number>();
+    const links = { linked: 0, unlinked: 0 };
+    const labelCounts = new Map<string, number>();
+    const filtersWithoutContent = { ...filters, content: "" };
+    for (const task of searchMatches) {
+      if (matchesTaskFilters(task, filtersWithoutContent, "statuses")) {
+        statuses.set(task.status, (statuses.get(task.status) ?? 0) + 1);
+      }
+      if (matchesTaskFilters(task, filtersWithoutContent, "priorities")) {
+        priorities.set(task.priority, (priorities.get(task.priority) ?? 0) + 1);
+      }
+      if (matchesTaskFilters(task, filtersWithoutContent, "link")) {
+        links[task.threadId ? "linked" : "unlinked"] += 1;
+      }
+      if (matchesTaskFilters(task, filtersWithoutContent, "labels")) {
+        for (const label of task.labels) {
+          labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1);
+        }
+      }
+    }
+    return { statuses, priorities, labels: labelCounts, links };
+  }, [filters, searchMatches]);
 
   function toggleStatus(status: TaskStatus) {
     const selected = new Set(filters.statuses);
@@ -160,32 +190,32 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
     label: statusDetails(config, status).label,
     category: "状态",
     keywords: status,
-    count: countFor("statuses", (task) => task.status === status),
+    count: counts.statuses.get(status) ?? 0,
     selected: filters.statuses.includes(status),
     icon: <span className={`filter-status-icon status-${status}`}><LinearStatusIcon status={status} /></span>,
     toggle: () => toggleStatus(status),
-  })), [config, statuses, filters, search, tasks]);
+  })), [config, statuses, filters, counts]);
 
   const priorityOptions = useMemo<FilterOption[]>(() => TASK_PRIORITIES.map((priority) => ({
     id: `priority-${priority}`,
     label: PRIORITY_LABELS[priority],
     category: "优先级",
     keywords: priority,
-    count: countFor("priorities", (task) => task.priority === priority),
+    count: counts.priorities.get(priority) ?? 0,
     selected: filters.priorities.includes(priority),
     icon: <LinearPriorityIcon priority={priority} />,
     toggle: () => togglePriority(priority),
-  })), [filters, search, tasks]);
+  })), [filters, counts]);
 
   const labelOptions = useMemo<FilterOption[]>(() => labels.map((label) => ({
     id: `label-${label}`,
     label,
     category: "标签",
-    count: countFor("labels", (task) => task.labels.includes(label)),
+    count: counts.labels.get(label) ?? 0,
     selected: filters.labels.includes(label),
     icon: <LabelGlyph label={label} />,
     toggle: () => toggleLabel(label),
-  })), [filters, labels, search, tasks]);
+  })), [filters, labels, counts]);
 
   const linkOptions = useMemo<FilterOption[]>(() => ([
     {
@@ -193,7 +223,7 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
       label: LINK_LABELS.linked,
       category: "Codex 对话",
       keywords: "codex thread task 已处理",
-      count: countFor("link", (task) => Boolean(task.threadId)),
+      count: counts.links.linked,
       selected: filters.link === "linked",
       icon: <LinearIcon name="link" />,
       toggle: () => toggleLink("linked"),
@@ -203,12 +233,12 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
       label: LINK_LABELS.unlinked,
       category: "Codex 对话",
       keywords: "codex thread task 未处理",
-      count: countFor("link", (task) => !task.threadId),
+      count: counts.links.unlinked,
       selected: filters.link === "unlinked",
       icon: <LinearIcon name="linkOff" />,
       toggle: () => toggleLink("unlinked"),
     },
-  ]), [filters, search, tasks]);
+  ]), [filters, counts]);
 
   const optionsBySubmenu: Partial<Record<SubmenuName, FilterOption[]>> = {
     statuses: statusOptions,
@@ -217,7 +247,20 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
     link: linkOptions,
   };
 
+  const sortOptions: { value: TaskSort; label: string }[] = [
+    { value: "default", label: "默认排序" },
+    { value: "name", label: "名称排序" },
+    { value: "priority", label: "优先级排序" },
+  ];
+
   const categories = [
+    {
+      id: "sort" as const,
+      label: "排序",
+      keywords: "sort order name priority 默认 名称 优先级",
+      icon: <LinearIcon name="displayOptions" />,
+      summary: sortOptions.find((option) => option.value === sort)?.label ?? null,
+    },
     {
       id: "statuses" as const,
       label: "状态",
@@ -432,6 +475,26 @@ export function TaskFilterMenu({ tasks, search, labels, filters, onChange }: Tas
   }
 
   function renderValueSubmenu(name: Exclude<SubmenuName, "content">) {
+    if (name === "sort") {
+      return (
+        <div className="task-filter-scroll" role="menu">
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={sort === option.value}
+              className={`task-filter-item filter-value-item${sort === option.value ? " is-selected" : ""}`}
+              data-filter-level="submenu"
+              onClick={() => { onSortChange(option.value); closeMenu(); }}
+            >
+              <span className="task-filter-item-label">{option.label}</span>
+              <span className="task-filter-item-check">{sort === option.value && <LinearIcon name="check" />}</span>
+            </button>
+          ))}
+        </div>
+      );
+    }
     const options = optionsBySubmenu[name] ?? [];
     const needle = submenuQuery.trim().toLowerCase();
     const visible = options.filter((option) => `${option.label} ${option.keywords ?? ""}`.toLowerCase().includes(needle));

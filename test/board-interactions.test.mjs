@@ -128,10 +128,10 @@ test("common issue mutations enter a Linear-style undo queue", () => {
   assert.match(appSource, /event\.key\.toLowerCase\(\) === "z"/);
   assert.match(appSource, /event\.metaKey \|\| event\.ctrlKey/);
   assert.match(appSource, /function pushUndo/);
-  assert.match(appSource, /setUndoNotice\(showNotice \? \{ id: operation\.id, message \} : null\)/);
+  assert.match(appSource, /if \(showNotice\) showToast\(message, \{ label: `撤回 \$\{undoShortcut\}`, run: \(\) => void performUndo\(\)/);
   assert.match(appSource, /moveTask\(task, destination, beforeTaskId, true\)/);
   assert.doesNotMatch(appSource, /setAnnouncement\(`已撤回：/);
-  assert.match(appSource, /className="toast undo-toast"/);
+  assert.match(appSource, /<Toasts \/>/);
   assert.match(appSource, /restoreTaskRequest\(archived\)/);
   assert.match(apiSource, /export async function restoreTask/);
 });
