@@ -2,16 +2,21 @@
 
 ## 推荐：让 AI 帮你配置
 
-在 Codex 中打开本仓库，复制下面的提示词，把方括号中的内容换成你的选择；暂时不需要的功能填写“不启用”。
+在 Codex 中打开本仓库，复制下面的提示词。AI 会先读取已有配置，再逐步提问；你可以对不需要的功能回答“不启用”。
 
 ```text
 请帮我配置并运行这个仓库的 Loop看板。先阅读 AGENTS.md、README.md 和
 skills/code-loop-board/SKILL.md，检查现有环境与配置，再完成可以自动执行的步骤。
 
-我的项目：[使用当前 Codex 项目，或指定已有项目名称]
-看板状态：[使用默认状态，或列出希望使用的状态与流转规则]
-外部缺陷平台：[不启用，或平台名称、实例地址、项目范围]
-运行方式：[本地网页 / 嵌入 Codex / 云端协作]
+请以提问的方式引导我，不要先给一张长表让我自行研究。先确认已有项目、看板状态和
+运行方式（本地网页 / 嵌入 Codex / 云端协作）。然后询问是否初始化缺陷拉取与部署。
+启用时读取 skills/code-loop-board/references/scheduled-integrations.md，先问我要粘贴的
+缺陷列表来源地址和部署地址，再逐步询问同步范围、部署环境、仓库/分支、周期与时区。
+每轮只问一个主题，答案及时保存到被忽略的 .loop-integrations/<实际项目ID>/schedule-config.json；
+使用 docs/integrations/schedule-config.example.json 作骨架，保留已有值，只问缺失或要改的项。
+平台连接写入 integrations.json；基础运行方式使用该本机配置的 setup 字段记录。
+页面确认按工具可用性选择：优先 Playwright；没有才用浏览器控制插件；再没有才用
+computer use。不依次调用三种工具，不因页面操作报错自动换工具。
 
 完成基础环境准备后，按我选择的运行方式实际启动：
 - 仅当运行方式为“嵌入 Codex”时，执行 AGENTS.md 中的“启动Loop看板”流程，
@@ -34,11 +39,16 @@ Loop看板中选择一次该项目，再读取实际项目 ID。其他模式直�
 自定义状态请先导出项目当前 JSON，修改后通过 board-config apply 应用并回读。
 如需接入外部平台，读取 docs/integrations/AI-ADAPTATION.md，按实际 API 或页面
 生成、验证并保存适配脚本，日常复用；真实写入只限我明确指定的样例和动作。
+若我选择初始化定时任务，按引导生成所选的独立计划，复用已有计划；每轮读取本机配置。
+部署 runner 尚未内置，要按实际平台生成并验证，不能调用不存在的发布命令。
+缺少配置或验证的计划保持暂停；没有调度工具则保存待创建提示词并说明如何在工具中创建。
+交付时给出配置文件位置和修改方法；修改周期/时区后还要更新调度器并回读，不能只改 JSON。
+跑完按定时任务引导做闭环验收，回读来源、看板、构建及实际调度记录；没有运行证据就标记待验证。
 最后分别报告已生成的文件、我还需填写的配置、已验证的操作和未验证部分。
 不要提交或推送 Git，也不要把本机配置或凭据写入公开示例。
 ```
 
-只需接入缺陷系统时，可以直接使用 [平台接入提示词](docs/integrations/README.md#推荐提示词)。
+希望 AI 逐步提问并生成两个定时任务时，使用 [定时任务初始化引导](skills/code-loop-board/references/scheduled-integrations.md)。只需接入缺陷系统时，可以直接使用 [平台接入提示词](docs/integrations/README.md#推荐提示词)。
 
 Loop看板是本地优先的 AI 任务看板，将事项、评论、附件、工作流、Worktree 和 Codex 会话关联起来。看板状态由项目 JSON 配置决定；外部缺陷系统通过独立适配器接入，核心不内置某个平台的登录方式、页面选择器或状态名。
 
@@ -51,6 +61,7 @@ Loop看板是本地优先的 AI 任务看板，将事项、评论、附件、工
 | 自定义看板状态 | 用 `board-config export` 导出项目配置为 `loop-board.json`，命令见下文 | 状态、流转和自动化绑定；编辑后必须 apply 才生效，不会自动读取这个文件 |
 | 接入外部缺陷平台 | 将 [连接示例](docs/integrations/integrations.example.json) 复制到仓库根目录 `integrations.json` | 实例地址、连接和项目 ID、来源项目范围、模块路径、认证引用及字段/动作映射，详见 [配置说明](docs/integrations/README.md#缺少文件时如何配置) |
 | 实现平台适配 | 从 [Playwright 模板](integrations/templates/playwright-provider.mjs) 创建 `integrations/local/<provider-id>/provider.mjs`，同目录保存 `ADAPTER.md` | 由 AI 根据真实平台实现；模板本身不能读写平台，不能只复制后就当作接通 |
+| 缺陷拉取与部署定时任务 | 从 [计划配置模板](docs/integrations/schedule-config.example.json) 生成 `.loop-integrations/<实际项目ID>/schedule-config.json` | AI 逐步提问并保存来源/部署地址、范围、环境、周期等；脚本每轮读取，周期/时区/启用状态修改后还需同步调度器，详见 [引导](skills/code-loop-board/references/scheduled-integrations.md) |
 | 平台认证 | 按适配器约定准备本机凭据；现有浏览器模板读取 `.loop-integrations/<connectionId>/storage-state.json` | 你完成真实登录，由适配器保存会话；API 认证方式及凭据格式由具体适配器定义 |
 | 自定义自动化审批规则 | 将 [规则示例](review-policy.example.json) 复制到实际被处理的代码仓库根目录 `review-policy.json` | 团队需要的变更阈值和路径规则；不是启动看板的必需文件 |
 | 云端协作 | 将 [部署模板](wrangler.example.jsonc) 复制到根目录 `wrangler.jsonc`；本地模拟另需 `.dev.vars` | 自己的 Worker、D1、R2 和域名配置；本地密钥填写方式见 [云端协作](docs/cloud-collaboration.md) |

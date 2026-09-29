@@ -1,6 +1,6 @@
 ---
 name: code-loop-board
-description: Configure Loop board states, manage projects and tasks through clb, execute assigned Worktree tasks, and create or maintain saved external issue adapters when explicitly requested.
+description: Configure Loop board states, manage projects and tasks through clb, execute assigned Worktree tasks, create saved external issue adapters, and guide AI setup of issue-sync and deployment schedules through questions and private configuration.
 ---
 > 本文件已为 CodeLoop 修改。
 
@@ -8,11 +8,16 @@ description: Configure Loop board states, manage projects and tasks through clb,
 
 使用 `$code-loop-board` 管理 Loop看板。任务、评论和自动化动作统一通过 `clb`；提示词提供固定 runner 时必须用该入口。命令与副作用见 [CLI 参考](references/cli.md)。平台接入或维护时，从固定 runner 的 `cli/clb.mjs` 路径定位看板仓库，读取其中的 `docs/integrations/AI-ADAPTATION.md`。安装 Skill 后不能把 Skill 所在目录当作看板仓库。
 
+## AI 提问式初始化
+
+用户要求初始化缺陷拉取与部署定时任务时，先读取 [定时任务引导](references/scheduled-integrations.md)。按其中的问题逐步收集答案并写入本机 JSON，先读取已有配置，只问缺失或变更项；必须询问缺陷列表来源地址和部署地址。页面确认按可用性优先选择 Playwright，其次浏览器控制插件，最后 computer use，只用最高优先级的可用工具。保存并实际验证脚本后，再通过当前环境的调度工具登记两项计划；未具备运行条件时暂停。跑完执行引导中的闭环验收，将两项链路结果及实际调度证据写回私有配置；不能以文件生成或计划登记代替运行成功。只要求文档指导时不创建实际任务。
+
 ## 先选工作路径
 
 - 看板配置：导出项目生效 JSON，修改、校验并显式导入。状态 ID、名称、顺序、颜色、人工流转与自动化绑定以项目配置为准。
 - 普通任务：读取任务与评论，按版本操作任务和关系；不要创建对简单工作没有价值的追踪事项。
 - 自动化执行：任务绑定活动 `automationExecution` 时使用受控执行入口和返回的 Worktree/token，不走普通人工移列。completed/canceled 是历史执行；paused_for_human 的恢复按当前任务指令处理，可在允许流转内移回待领取，或在解决合并冲突后使用 resume-merge。
+- 定时拉取与部署初始化：按上述提问流程持久化配置、生成并验证脚本、创建或更新两项独立计划。
 - 平台接入或页面变化：按明确授权维护保存的适配包，再由通用集成命令调用。日常业务执行不临时生成新脚本。
 
 ## 看板 JSON

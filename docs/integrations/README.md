@@ -1,32 +1,36 @@
 # 外部平台接入
 
+## 用 AI 初始化两个定时任务
+
+复制这句开始：
+
+```text
+请使用 $code-loop-board，按 skills/code-loop-board/references/scheduled-integrations.md
+以逐步提问的方式初始化缺陷拉取和部署定时任务。先读已有配置，只问缺失或我要修改的内容，
+让我粘贴缺陷列表来源地址和部署地址；把答案保存到本机配置文件，生成并验证脚本，
+最后创建或更新两个计划，按引导闭环验证真实执行与数据回读，并将结果写入本机配置，
+告诉我以后修改哪个文件。不要把真实资料写入公开示例。
+```
+
+完整问题顺序、脚本产物、计划提示词及修改流程见 [提问式引导](../../skills/code-loop-board/references/scheduled-integrations.md)，配置骨架见 [schedule-config.example.json](schedule-config.example.json)。页面确认按工具可用性优先选择 Playwright；没有时用浏览器控制插件；两者都没有才用 computer use。
+
 ## 推荐提示词
 
-在本仓库的 Codex 对话中复制下列内容，填写平台和项目资料；不清楚的字段可以标记“待确认”，让 AI 说明从哪里获取。
+只接入缺陷平台、不创建定时任务时，复制下面的提示词：
 
 ```text
 请为 Loop看板配置外部缺陷平台接入。先阅读 AGENTS.md、docs/integrations/AI-ADAPTATION.md、
 docs/integrations/integrations.example.json 和 skills/code-loop-board/SKILL.md。
-
-目标平台与实例：[名称、地址]
-本地看板项目：[使用当前 Codex 项目，或指定已有项目名称]
-来源项目范围：[平台项目 ID 或路径]
-认证方式：[浏览器登录 / API 凭据 / 待确认]
-读取样例：[一条事项链接或 ID]
-允许写入的样例与动作：[暂不写入，或明确的事项和动作]
-
-先识别已有 Codex 项目并查询对应看板记录，使用实际项目 ID，不重复手动创建。
-如果尚无看板记录，引导我在嵌入式 Loop看板中选择一次该项目，由看板自动创建记录。
-再检查 integrations.json、注册的适配模块和认证文件是否存在。
-缺失时列出模板、目标路径和待填字段；可以生成配置骨架，但真实地址、项目标识及
-认证信息必须以我提供或实际确认的资料为准。需要我自行配置的部分，逐项说明如何获取、
-在哪里填写、完成后运行什么命令；引导我在本机登录或填写凭据，不在对话中收集秘密。
-不要覆盖已有配置，不把示例占位符当作有效配置。
-
-按真实 API 或页面实现并保存 integrations/local/<provider-id>/provider.mjs 和 ADAPTER.md。
-核对身份、状态及动作映射，读取样例后再同步；只执行上面明确允许的外部写入并回读核验。
-日常任务复用已保存的脚本。inspect 成功只能说明能力声明可读取，不能据此宣称平台已接通。
-结束时报告已配置、待我配置和已验证的项目，不提交或推送 Git。
+请先查询已有项目与连接，再逐步提问：让我粘贴缺陷列表来源地址，确认项目范围与筛选条件，
+引导我在本机登录，最后询问可用于验证的事项及允许的动作。每轮只问一个主题。
+确认的连接与项目映射保存到私有 integrations.json；页面入口与筛选字段按适配器契约保存。
+缺文件先生成骨架，只问尚缺或我要求修改的内容，不覆盖已有配置，不使用示例 ID。
+项目没有记录时引导我在嵌入式看板选择已识别的 Codex 项目，由看板自动创建后读取实际 ID。
+页面确认优先用可用的 Playwright；没有时用浏览器控制插件；两者都没有才用 computer use。
+根据真实观察生成 integrations/local/<provider-id>/provider.mjs 和 ADAPTER.md，
+实际验证保存的脚本，只执行我授权的写入并回读结果，日常复用这些脚本。
+不要在对话中收集密码、Cookie 或 token，不把真实资料写入公开示例。
+最后报告配置路径、已验证操作、待配置项与修改方式；本流程不创建定时任务，不提交或推送 Git。
 ```
 
 Loop看板通过保存的本地适配脚本接入缺陷系统。仓库没有预置公司平台、账号或已验证的远程连接。
@@ -82,6 +86,6 @@ clb integration action ISSUE_ID --action start_work --thread-id THREAD_ID --json
 
 同步按结构化身份查重，保留任务修复正文与仓库快照，源评论按 ID 去重。closeOnSourceClosed 是否启用由连接的项目配置决定，移动仍遵守项目 JSON 状态规则。
 
-发布扩展位于 `server/integrations/releases.mjs`，支持独立的 releaseProviders/releaseConnections 和 triggerRelease/getRelease。当前只是供代码调用的服务模块，尚无发布 HTTP 路由或 CLI 命令，也没有内置 CI 实现或自动发布定时任务；仅填写连接 JSON 不会启动发布，需要另行实现调用入口并验证目标 CI。
+发布扩展位于 `server/integrations/releases.mjs`，支持独立的 releaseProviders/releaseConnections 和 triggerRelease/getRelease。当前只是供代码调用的服务模块，尚无发布 HTTP 路由或 CLI 命令，也没有内置 CI 实现或自动发布定时任务。按上述引导，AI 根据用户答案生成本机发布 runner，实际验证目标 CI，再通过可用调度工具创建计划；仅填写连接 JSON 不会启动发布。
 
 本地私有配置、认证状态、运行截图和验证材料由 `.gitignore` 排除。准备公开自己的适配包时，还应将租户地址、账号和实际事项内容移出代码与 ADAPTER.md。

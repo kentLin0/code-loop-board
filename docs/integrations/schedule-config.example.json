@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "setup": {
+    "runMode": null,
+    "requestedJobs": []
+  },
+  "project": {
+    "boardProjectId": null,
+    "schedulerProjectId": null,
+    "workspacePath": null
+  },
+  "runtime": {
+    "nodeExecutable": null,
+    "boardRoot": null,
+    "clbEntrypoint": null
+  },
+  "issueSync": {
+    "enabled": false,
+    "listUrl": null,
+    "connectionId": null,
+    "providerId": null,
+    "scopeId": null,
+    "authRef": null,
+    "filter": {},
+    "content": {
+      "comments": null,
+      "images": null
+    },
+    "trackImportedIssues": null,
+    "closeOnSourceClosed": null,
+    "delivery": {
+      "mode": null,
+      "repositories": []
+    },
+    "runnerPath": null,
+    "schedule": {
+      "intervalMinutes": null,
+      "timezone": null
+    },
+    "automationId": null,
+    "appliedSchedule": null
+  },
+  "deployment": {
+    "enabled": false,
+    "url": null,
+    "connectionId": null,
+    "providerId": null,
+    "authRef": null,
+    "environment": null,
+    "repositories": [],
+    "batch": {
+      "mode": null,
+      "minCount": null,
+      "maxWaitMinutes": null
+    },
+    "parameters": {},
+    "runnerPath": null,
+    "statePath": null,
+    "schedule": {
+      "intervalMinutes": null,
+      "timezone": null
+    },
+    "automationId": null,
+    "appliedSchedule": null,
+    "requestVerification": null,
+    "retryOnNewCommit": null
+  },
+  "verification": {
+    "issueSample": null,
+    "deploymentMode": null,
+    "deploymentVersion": null,
+    "issueSyncVerified": false,
+    "deploymentVerified": false,
+    "chains": {
+      "issueSync": {
+        "passed": false,
+        "lastRunId": null,
+        "verifiedAt": null,
+        "evidencePath": null
+      },
+      "deployment": {
+        "passed": false,
+        "lastRunId": null,
+        "verifiedAt": null,
+        "evidencePath": null
+      }
+    }
+  }
+}
