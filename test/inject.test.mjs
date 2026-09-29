@@ -78,7 +78,7 @@ test("page mount accepts the current edge-scroll frame above the global header b
   const surface = { closest: () => ({}), querySelector: () => null };
   const viewport = {
     parentElement: surface,
-    closest: () => null,
+    closest: (selector) => selector === "main" ? surface : null,
     getBoundingClientRect: () => ({ top: 36, width: 1610, height: 1116 }),
     children: [],
   };

@@ -375,7 +375,7 @@
     const frameHost = findPageHost();
     const viewport = frameHost?.closest?.("[data-app-shell-main-content-layout]");
     const surface = viewport?.closest("[data-app-shell-workspace-row]") || viewport?.parentElement;
-    if (!frameHost || !surface || !surface.closest("main")) return null;
+    if (!frameHost || !surface || !viewport.closest("main")) return null;
     const rail = surface.querySelector("nav[data-app-navigation-rail]");
     return { frameHost, surface, rail };
   }

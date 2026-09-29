@@ -7,6 +7,20 @@ import vm from "node:vm";
 const source = await readFile(new URL("../inject/codex-taskboard.user.js", import.meta.url), "utf8");
 const findSource = source.slice(source.indexOf("function findReferenceButton"), source.indexOf("function replaceEntryIcon"));
 
+test("workspace row outside main mounts the viewport inside main", () => {
+  const mountSource = source.slice(source.indexOf("function findPageMount"), source.indexOf("function syncNativeRailIcons"));
+  const main = {};
+  const rail = {};
+  const surface = { closest: () => null, querySelector: () => rail };
+  const viewport = { closest: (selector) => selector === "main" ? main : surface };
+  const frameHost = { closest: () => viewport };
+  const find = vm.runInNewContext(`(${mountSource})`, { findPageHost: () => frameHost });
+  const mount = find();
+  assert.equal(mount?.surface, surface);
+  assert.equal(mount?.frameHost, frameHost);
+  assert.equal(mount?.rail, rail);
+});
+
 test("icon rail anchors outside the legacy scroll area", () => {
   const rail = {};
   const find = vm.runInNewContext(`(${findSource})`, {
